@@ -132,7 +132,7 @@ func (adapter *Adapter) SavePolicy(cmodel cModel.Model) error {
 		}
 	}
 	if err := adapter.casbinRuleRepository.ReplaceAllCasbinRules(casbinRules); err != nil {
-		return nil
+		return err
 	}
 	return nil
 }

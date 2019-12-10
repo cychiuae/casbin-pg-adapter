@@ -103,25 +103,43 @@ func (repository *CasbinRuleRepository) DeleteCasbinRule(casbinRule model.Casbin
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(
-		fmt.Sprintf(`
+	var queryBuilder strings.Builder
+	args := make([]interface{}, 0)
+	queryBuilder.WriteString(fmt.Sprintf(`
 			DELETE FROM %s
 			WHERE
-				pType = $1 AND
-				v0 = $1 AND
-				v1 = $2 AND
-				v2 = $3 AND
-				v3 = $4 AND
-				v4 = $5 AND
-				v5 = $6 AND
-		`, repository.tableName),
-		casbinRule.PType,
-		casbinRule.V0,
-		casbinRule.V1,
-		casbinRule.V2,
-		casbinRule.V3,
-		casbinRule.V4,
-		casbinRule.V5,
+				pType = $1
+	`, repository.tableName))
+	args = append(args, casbinRule.PType)
+
+	if casbinRule.V0 != "" {
+		args = append(args, casbinRule.V0)
+		queryBuilder.WriteString(fmt.Sprintf("AND v0 = $%d ", len(args)))
+	}
+	if casbinRule.V1 != "" {
+		args = append(args, casbinRule.V1)
+		queryBuilder.WriteString(fmt.Sprintf("AND v1 = $%d ", len(args)))
+	}
+	if casbinRule.V2 != "" {
+		args = append(args, casbinRule.V2)
+		queryBuilder.WriteString(fmt.Sprintf("AND v2 = $%d ", len(args)))
+	}
+	if casbinRule.V3 != "" {
+		args = append(args, casbinRule.V3)
+		queryBuilder.WriteString(fmt.Sprintf("AND v3 = $%d ", len(args)))
+	}
+	if casbinRule.V4 != "" {
+		args = append(args, casbinRule.V4)
+		queryBuilder.WriteString(fmt.Sprintf("AND v4 = $%d ", len(args)))
+	}
+	if casbinRule.V5 != "" {
+		args = append(args, casbinRule.V5)
+		queryBuilder.WriteString(fmt.Sprintf("AND v5 = $%d ", len(args)))
+	}
+
+	_, err = tx.Exec(
+		queryBuilder.String(),
+		args...,
 	)
 	if err != nil {
 		tx.Rollback()
@@ -151,13 +169,13 @@ func (repository *CasbinRuleRepository) ReplaceAllCasbinRules(casbinRules []mode
 	values := make([]string, 0)
 	for _, casbinRule := range casbinRules {
 		value := fmt.Sprintf("(%s)", strings.Join([]string{
-			casbinRule.PType,
-			casbinRule.V0,
-			casbinRule.V1,
-			casbinRule.V2,
-			casbinRule.V3,
-			casbinRule.V4,
-			casbinRule.V5,
+			fmt.Sprintf("'%s'", casbinRule.PType),
+			fmt.Sprintf("'%s'", casbinRule.V0),
+			fmt.Sprintf("'%s'", casbinRule.V1),
+			fmt.Sprintf("'%s'", casbinRule.V2),
+			fmt.Sprintf("'%s'", casbinRule.V3),
+			fmt.Sprintf("'%s'", casbinRule.V4),
+			fmt.Sprintf("'%s'", casbinRule.V5),
 		}, ","))
 		values = append(values, value)
 	}
