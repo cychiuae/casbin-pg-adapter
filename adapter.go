@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"runtime"
 
 	cModel "github.com/casbin/casbin/v2/model"
 	"github.com/casbin/casbin/v2/persist"
@@ -18,38 +17,25 @@ import (
 
 // Adapter is a postgresql adaptor for casbin
 type Adapter struct {
-	connectionString     string
 	db                   *sql.DB
 	tableName            string
 	casbinRuleRepository *repository.CasbinRuleRepository
 }
 
 // NewAdapter returns a new casbin postgresql adapter
-func NewAdapter(connectionString string, tableName string) (*Adapter, error) {
-	db, err := sql.Open("postgres", connectionString)
-	if err != nil {
-		return nil, err
-	}
-
+func NewAdapter(db *sql.DB, tableName string) (*Adapter, error) {
 	casbinRuleRepository := repository.NewCasbinRuleRepository(tableName, db)
 	adapter := &Adapter{
-		connectionString,
 		db,
 		tableName,
 		casbinRuleRepository,
 	}
 
-	if err = adapter.setup(); err != nil {
+	if err := adapter.setup(); err != nil {
 		return nil, err
 	}
-	runtime.SetFinalizer(adapter, finalizer)
-	return adapter, nil
-}
 
-func finalizer(a *Adapter) {
-	if err := a.db.Close(); err != nil {
-		log.Println("Cannot close db connection")
-	}
+	return adapter, nil
 }
 
 func (adapter *Adapter) setup() error {

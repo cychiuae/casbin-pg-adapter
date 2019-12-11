@@ -12,6 +12,7 @@ $ go get github.com/cychiuae/casbin-pg-adapter
 package main
 
 import (
+  "database/sql"
   "os"
 
   "github.com/casbin/casbin/v2"
@@ -20,8 +21,13 @@ import (
 
 func main() {
   connectionString := "postgresql://postgres:@localhost:5432/postgres?sslmode=disable"
+  db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+  if err != nil {
+    panic(err)
+  }
+
   tableName := "casbin"
-  adapter, err := casbinpgadapter.NewAdapter(connectionString, tableName)
+  adapter, err := casbinpgadapter.NewAdapter(db, tableName)
   if err != nil {
     panic(err)
   }
