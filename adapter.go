@@ -53,7 +53,7 @@ func (adapter *Adapter) createTableIfNeeded() error {
 	}
 	_, err = tx.Exec(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS "%v" (
-			pType varchar(256) not null default '',
+			p_type varchar(256) not null default '',
 			v0 		varchar(256) not null default '',
 			v1 		varchar(256) not null default '',
 			v2 		varchar(256) not null default '',
@@ -67,7 +67,7 @@ func (adapter *Adapter) createTableIfNeeded() error {
 		return err
 	}
 	columns := [7]string{
-		"pType",
+		"p_type",
 		"v0",
 		"v1",
 		"v2",

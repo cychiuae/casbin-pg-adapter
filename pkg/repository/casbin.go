@@ -25,7 +25,7 @@ func NewCasbinRuleRepository(tableName string, db *sql.DB) *CasbinRuleRepository
 // LoadAllCasbinRules loads all casbin rules from db
 func (repository *CasbinRuleRepository) LoadAllCasbinRules() ([]model.CasbinRule, error) {
 	rows, err := repository.db.Query(fmt.Sprintf(`
-		SELECT pType, v0, v1, v2, v3, v4, v5 FROM %s
+		SELECT p_type, v0, v1, v2, v3, v4, v5 FROM %s
 	`, repository.tableName))
 	if err != nil {
 		return nil, err
@@ -74,7 +74,7 @@ func (repository *CasbinRuleRepository) InsertCasbinRule(casbinRule model.Casbin
 	}
 	_, err = tx.Exec(
 		fmt.Sprintf(`
-			INSERT INTO %s (pType, v0, v1, v2, v3, v4, v5)
+			INSERT INTO %s (p_type, v0, v1, v2, v3, v4, v5)
 			VALUES
 				($1, $2, $3, $4, $5, $6, $7)
 		`, repository.tableName),
@@ -108,7 +108,7 @@ func (repository *CasbinRuleRepository) DeleteCasbinRule(casbinRule model.Casbin
 	queryBuilder.WriteString(fmt.Sprintf(`
 			DELETE FROM %s
 			WHERE
-				pType = $1
+				p_type = $1
 	`, repository.tableName))
 	args = append(args, casbinRule.PType)
 
@@ -183,7 +183,7 @@ func (repository *CasbinRuleRepository) ReplaceAllCasbinRules(casbinRules []mode
 	_, err = tx.Exec(
 		fmt.Sprintf(
 			`
-				INSERT INTO %s (pType, v0, v1, v2, v3, v4, v5)
+				INSERT INTO %s (p_type, v0, v1, v2, v3, v4, v5)
 				VALUES %s
 			`,
 			repository.tableName,
