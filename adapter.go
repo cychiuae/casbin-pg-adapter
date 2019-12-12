@@ -63,6 +63,7 @@ func (adapter *Adapter) createTableIfNeeded() error {
 		)
 	`, adapter.tableName))
 	if err != nil {
+		tx.Rollback()
 		log.Printf("Cannot create table %v", err)
 		return err
 	}
@@ -76,13 +77,19 @@ func (adapter *Adapter) createTableIfNeeded() error {
 		"v5",
 	}
 	for _, column := range columns {
-		tx.Exec(fmt.Sprintf(`
+		_, err = tx.Exec(fmt.Sprintf(`
 			CREATE INDEX IF NOT EXISTS idx_%[1]v_%[2]v ON %[1]v (%[2]v)
 		`, adapter.tableName, column))
+		if err != nil {
+			log.Printf("Cannot create index for column: %v. Error: %v", column, err)
+			tx.Rollback()
+			return err
+		}
 	}
 	err = tx.Commit()
 	if err != nil {
 		log.Printf("Cannot commit transaction %v", err)
+		tx.Rollback()
 		return err
 	}
 	return nil
