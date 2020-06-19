@@ -28,6 +28,9 @@ func main() {
 
   tableName := "casbin"
   adapter, err := casbinpgadapter.NewAdapter(db, tableName)
+  // If you are using db schema
+  // myDBSchema := "mySchema"
+  // adapter, err := casbinpgadapter.NewAdapterWithDBSchema(db, myDBSchema, tableName)
   if err != nil {
     panic(err)
   }
