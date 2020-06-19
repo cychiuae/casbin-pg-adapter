@@ -18,15 +18,21 @@ import (
 // Adapter is a postgresql adaptor for casbin
 type Adapter struct {
 	db                   *sql.DB
+	dbSchema             string
 	tableName            string
 	casbinRuleRepository *repository.CasbinRuleRepository
 }
 
 // NewAdapter returns a new casbin postgresql adapter
 func NewAdapter(db *sql.DB, tableName string) (*Adapter, error) {
-	casbinRuleRepository := repository.NewCasbinRuleRepository(tableName, db)
+	return NewAdapterWithDBSchema(db, "public", tableName)
+}
+
+func NewAdapterWithDBSchema(db *sql.DB, dbSchema string, tableName string) (*Adapter, error) {
+	casbinRuleRepository := repository.NewCasbinRuleRepository(dbSchema, tableName, db)
 	adapter := &Adapter{
 		db,
+		dbSchema,
 		tableName,
 		casbinRuleRepository,
 	}
@@ -52,7 +58,7 @@ func (adapter *Adapter) createTableIfNeeded() error {
 		return err
 	}
 	_, err = tx.Exec(fmt.Sprintf(`
-		CREATE TABLE IF NOT EXISTS "%v" (
+		CREATE TABLE IF NOT EXISTS "%s"."%s" (
 			p_type varchar(256) not null default '',
 			v0 		varchar(256) not null default '',
 			v1 		varchar(256) not null default '',
@@ -61,7 +67,7 @@ func (adapter *Adapter) createTableIfNeeded() error {
 			v4 		varchar(256) not null default '',
 			v5 		varchar(256) not null default ''
 		)
-	`, adapter.tableName))
+	`, adapter.dbSchema, adapter.tableName))
 	if err != nil {
 		_ = tx.Rollback()
 		log.Printf("Cannot create table %v", err)
@@ -78,8 +84,8 @@ func (adapter *Adapter) createTableIfNeeded() error {
 	}
 	for _, column := range columns {
 		_, err = tx.Exec(fmt.Sprintf(`
-			CREATE INDEX IF NOT EXISTS idx_%[1]v_%[2]v ON %[1]v (%[2]v)
-		`, adapter.tableName, column))
+			CREATE INDEX IF NOT EXISTS idx_%[2]s_%[3]s ON "%[1]s"."%[2]s" (%[3]s)
+		`, adapter.dbSchema, adapter.tableName, column))
 		if err != nil {
 			log.Printf("Cannot create index for column: %v. Error: %v", column, err)
 			_ = tx.Rollback()

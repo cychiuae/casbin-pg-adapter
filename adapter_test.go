@@ -32,11 +32,6 @@ func TestAdapter(t *testing.T) {
 		return
 	}
 
-	if err != nil {
-		t.Fatalf("Cannot create adapter %v", err)
-		return
-	}
-
 	adapter, err = NewAdapter(db, "casbin")
 	if err != nil {
 		t.Fatalf("Cannot create adapter %v", err)
