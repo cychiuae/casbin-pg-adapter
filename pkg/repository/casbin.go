@@ -10,13 +10,15 @@ import (
 
 // CasbinRuleRepository is the bridge for adapter and db
 type CasbinRuleRepository struct {
+	dbSchema  string
 	tableName string
 	db        *sql.DB
 }
 
 // NewCasbinRuleRepository returns a new CasbinRuleRepository
-func NewCasbinRuleRepository(tableName string, db *sql.DB) *CasbinRuleRepository {
+func NewCasbinRuleRepository(dbSchema string, tableName string, db *sql.DB) *CasbinRuleRepository {
 	return &CasbinRuleRepository{
+		dbSchema:  dbSchema,
 		tableName: tableName,
 		db:        db,
 	}
@@ -25,8 +27,8 @@ func NewCasbinRuleRepository(tableName string, db *sql.DB) *CasbinRuleRepository
 // LoadAllCasbinRules loads all casbin rules from db
 func (repository *CasbinRuleRepository) LoadAllCasbinRules() ([]model.CasbinRule, error) {
 	rows, err := repository.db.Query(fmt.Sprintf(`
-		SELECT p_type, v0, v1, v2, v3, v4, v5 FROM %s
-	`, repository.tableName))
+		SELECT p_type, v0, v1, v2, v3, v4, v5 FROM "%s"."%s"
+	`, repository.dbSchema, repository.tableName))
 	if err != nil {
 		return nil, err
 	}
@@ -74,10 +76,10 @@ func (repository *CasbinRuleRepository) InsertCasbinRule(casbinRule model.Casbin
 	}
 	_, err = tx.Exec(
 		fmt.Sprintf(`
-			INSERT INTO %s (p_type, v0, v1, v2, v3, v4, v5)
+			INSERT INTO "%s"."%s" (p_type, v0, v1, v2, v3, v4, v5)
 			VALUES
 				($1, $2, $3, $4, $5, $6, $7)
-		`, repository.tableName),
+		`, repository.dbSchema, repository.tableName),
 		casbinRule.PType,
 		casbinRule.V0,
 		casbinRule.V1,
@@ -87,11 +89,11 @@ func (repository *CasbinRuleRepository) InsertCasbinRule(casbinRule model.Casbin
 		casbinRule.V5,
 	)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	if err = tx.Commit(); err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	return nil
@@ -106,10 +108,10 @@ func (repository *CasbinRuleRepository) DeleteCasbinRule(casbinRule model.Casbin
 	var queryBuilder strings.Builder
 	args := make([]interface{}, 0)
 	queryBuilder.WriteString(fmt.Sprintf(`
-			DELETE FROM %s
+			DELETE FROM "%s"."%s"
 			WHERE
 				p_type = $1
-	`, repository.tableName))
+	`, repository.dbSchema, repository.tableName))
 	args = append(args, casbinRule.PType)
 
 	if casbinRule.V0 != "" {
@@ -142,11 +144,11 @@ func (repository *CasbinRuleRepository) DeleteCasbinRule(casbinRule model.Casbin
 		args...,
 	)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	if err = tx.Commit(); err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	return nil
@@ -159,10 +161,10 @@ func (repository *CasbinRuleRepository) ReplaceAllCasbinRules(casbinRules []mode
 		return err
 	}
 	_, err = tx.Exec(fmt.Sprintf(`
-		TRUNCATE TABLE %s
-	`, repository.tableName))
+		TRUNCATE TABLE "%s"."%s"
+	`, repository.dbSchema, repository.tableName))
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 
@@ -183,19 +185,20 @@ func (repository *CasbinRuleRepository) ReplaceAllCasbinRules(casbinRules []mode
 	_, err = tx.Exec(
 		fmt.Sprintf(
 			`
-				INSERT INTO %s (p_type, v0, v1, v2, v3, v4, v5)
+				INSERT INTO "%s".%s (p_type, v0, v1, v2, v3, v4, v5)
 				VALUES %s
 			`,
+			repository.dbSchema,
 			repository.tableName,
 			strings.Join(values, ",")),
 	)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 
 	if err = tx.Commit(); err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	return nil

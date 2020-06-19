@@ -32,13 +32,16 @@ func TestAdapter(t *testing.T) {
 		return
 	}
 
+	adapter, err = NewAdapter(db, "casbin")
 	if err != nil {
 		t.Fatalf("Cannot create adapter %v", err)
 		return
 	}
-
-	adapter, err = NewAdapter(db, "casbin")
 	enforcer, err = casbin.NewEnforcer("./example/model.conf", adapter)
+	if err != nil {
+		t.Fatalf("Cannot create enforcer %v", err)
+		return
+	}
 	enforcerPolicy := enforcer.GetPolicy()
 	want := [][]string{{"alice", "data1", "read"}, {"bob", "data2", "write"}, {"data2_admin", "data2", "read"}, {"data2_admin", "data2", "write"}}
 	if !util.Array2DEquals(enforcerPolicy, want) {
@@ -47,8 +50,14 @@ func TestAdapter(t *testing.T) {
 	}
 
 	enforcer.EnableAutoSave(false)
-	enforcer.AddPolicy("alice", "data1", "write")
-	enforcer.LoadPolicy()
+	if _, err = enforcer.AddPolicy("alice", "data1", "write"); err != nil {
+		t.Fatalf("Cannot add policy")
+		return
+	}
+	if err = enforcer.LoadPolicy(); err != nil {
+		t.Fatalf("Cannot load policy")
+		return
+	}
 	enforcerPolicy = enforcer.GetPolicy()
 	if !util.Array2DEquals(enforcerPolicy, want) {
 		t.Fatalf("Want %v but got %v", want, enforcerPolicy)
@@ -57,8 +66,14 @@ func TestAdapter(t *testing.T) {
 
 	enforcer.EnableAutoSave(true)
 
-	enforcer.AddPolicy("alice", "data1", "write")
-	enforcer.LoadPolicy()
+	if _, err = enforcer.AddPolicy("alice", "data1", "write"); err != nil {
+		t.Fatalf("Cannot add policy")
+		return
+	}
+	if err = enforcer.LoadPolicy(); err != nil {
+		t.Fatalf("Cannot load policy")
+		return
+	}
 	enforcerPolicy = enforcer.GetPolicy()
 	want = [][]string{{"alice", "data1", "read"}, {"bob", "data2", "write"}, {"data2_admin", "data2", "read"}, {"data2_admin", "data2", "write"}, {"alice", "data1", "write"}}
 	if !util.Array2DEquals(enforcerPolicy, want) {
@@ -66,8 +81,14 @@ func TestAdapter(t *testing.T) {
 		return
 	}
 
-	enforcer.RemovePolicy("alice", "data1", "write")
-	enforcer.LoadPolicy()
+	if _, err = enforcer.RemovePolicy("alice", "data1", "write"); err != nil {
+		t.Fatalf("Cannot remove policy")
+		return
+	}
+	if err = enforcer.LoadPolicy(); err != nil {
+		t.Fatalf("Cannot load policy")
+		return
+	}
 	enforcerPolicy = enforcer.GetPolicy()
 	want = [][]string{{"alice", "data1", "read"}, {"bob", "data2", "write"}, {"data2_admin", "data2", "read"}, {"data2_admin", "data2", "write"}}
 	if !util.Array2DEquals(enforcerPolicy, want) {
@@ -75,8 +96,14 @@ func TestAdapter(t *testing.T) {
 		return
 	}
 
-	enforcer.RemoveFilteredPolicy(0, "data2_admin")
-	enforcer.LoadPolicy()
+	if _, err = enforcer.RemoveFilteredPolicy(0, "data2_admin"); err != nil {
+		t.Fatalf("Cannot remove filtered policy")
+		return
+	}
+	if err = enforcer.LoadPolicy(); err != nil {
+		t.Fatalf("Cannot load policy")
+		return
+	}
 	enforcerPolicy = enforcer.GetPolicy()
 	want = [][]string{{"alice", "data1", "read"}, {"bob", "data2", "write"}}
 	if !util.Array2DEquals(enforcerPolicy, want) {
