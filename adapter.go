@@ -63,7 +63,7 @@ func (adapter *Adapter) createTableIfNeeded() error {
 		)
 	`, adapter.tableName))
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		log.Printf("Cannot create table %v", err)
 		return err
 	}
@@ -82,14 +82,14 @@ func (adapter *Adapter) createTableIfNeeded() error {
 		`, adapter.tableName, column))
 		if err != nil {
 			log.Printf("Cannot create index for column: %v. Error: %v", column, err)
-			tx.Rollback()
+			_ = tx.Rollback()
 			return err
 		}
 	}
 	err = tx.Commit()
 	if err != nil {
 		log.Printf("Cannot commit transaction %v", err)
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	return nil

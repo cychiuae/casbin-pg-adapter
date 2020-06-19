@@ -87,11 +87,11 @@ func (repository *CasbinRuleRepository) InsertCasbinRule(casbinRule model.Casbin
 		casbinRule.V5,
 	)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	if err = tx.Commit(); err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	return nil
@@ -142,11 +142,11 @@ func (repository *CasbinRuleRepository) DeleteCasbinRule(casbinRule model.Casbin
 		args...,
 	)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	if err = tx.Commit(); err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	return nil
@@ -162,7 +162,7 @@ func (repository *CasbinRuleRepository) ReplaceAllCasbinRules(casbinRules []mode
 		TRUNCATE TABLE %s
 	`, repository.tableName))
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 
@@ -190,12 +190,12 @@ func (repository *CasbinRuleRepository) ReplaceAllCasbinRules(casbinRules []mode
 			strings.Join(values, ",")),
 	)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 
 	if err = tx.Commit(); err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	return nil
