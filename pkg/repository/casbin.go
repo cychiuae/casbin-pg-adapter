@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cychiuae/casbin-pg-adapter/pkg/model"
+	"github.com/casbin/casbin-pg-adapter/pkg/model"
 )
 
 // CasbinRuleRepository is the bridge for adapter and db

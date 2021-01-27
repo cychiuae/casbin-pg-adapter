@@ -11,8 +11,8 @@ import (
 	// no-lint
 	_ "github.com/lib/pq"
 
-	"github.com/cychiuae/casbin-pg-adapter/pkg/model"
-	"github.com/cychiuae/casbin-pg-adapter/pkg/repository"
+	"github.com/casbin/casbin-pg-adapter/pkg/model"
+	"github.com/casbin/casbin-pg-adapter/pkg/repository"
 )
 
 // Adapter is a postgresql adaptor for casbin
