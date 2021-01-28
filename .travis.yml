@@ -1,0 +1,19 @@
+language: go
+
+go:
+  - "1.11.13"
+  - "1.12"
+  - "1.13"
+  - "1.14"
+
+services:
+  - docker
+
+install:
+  - go get -u
+
+before_script:
+  - docker-compose up -d
+
+script:
+  - make test
