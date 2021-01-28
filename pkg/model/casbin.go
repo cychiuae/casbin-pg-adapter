@@ -8,6 +8,13 @@ const (
 	policyLinePrefix = ", "
 )
 
+// Filter defines the filtering rules for a FilteredAdapter's policy. Empty values
+// are ignored, but all others must match the filter.
+type Filter struct {
+	P []string
+	G []string
+}
+
 // CasbinRule is the model for casbin rule
 type CasbinRule struct {
 	PType string
@@ -106,4 +113,30 @@ func (casbinRule CasbinRule) ToPolicyLine() string {
 	}
 
 	return stringBuilder.String()
+}
+
+// ToStringSlice map casbinRule to a string slice used in casbin.Model
+func (casbinRule CasbinRule) ToStringSlice() []string {
+	rule := make([]string, 0)
+	rule = append(rule, casbinRule.PType)
+
+	if len(casbinRule.V0) > 0 {
+		rule = append(rule, casbinRule.V0)
+	}
+	if len(casbinRule.V1) > 0 {
+		rule = append(rule, casbinRule.V1)
+	}
+	if len(casbinRule.V2) > 0 {
+		rule = append(rule, casbinRule.V2)
+	}
+	if len(casbinRule.V3) > 0 {
+		rule = append(rule, casbinRule.V3)
+	}
+	if len(casbinRule.V4) > 0 {
+		rule = append(rule, casbinRule.V4)
+	}
+	if len(casbinRule.V5) > 0 {
+		rule = append(rule, casbinRule.V5)
+	}
+	return rule
 }

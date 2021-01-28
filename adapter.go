@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	cModel "github.com/casbin/casbin/v2/model"
+	casbinModel "github.com/casbin/casbin/v2/model"
 	"github.com/casbin/casbin/v2/persist"
 
 	// no-lint
@@ -28,6 +28,7 @@ func NewAdapter(db *sql.DB, tableName string) (*Adapter, error) {
 	return NewAdapterWithDBSchema(db, "public", tableName)
 }
 
+// NewAdapterWithDBSchema returns a new casbin postgresql adapter with the schema named dbSchema
 func NewAdapterWithDBSchema(db *sql.DB, dbSchema string, tableName string) (*Adapter, error) {
 	casbinRuleRepository := repository.NewCasbinRuleRepository(dbSchema, tableName, db)
 	adapter := &Adapter{
@@ -102,7 +103,7 @@ func (adapter *Adapter) createTableIfNeeded() error {
 }
 
 // LoadPolicy loads all policy rules from the storage.
-func (adapter *Adapter) LoadPolicy(cmodel cModel.Model) error {
+func (adapter *Adapter) LoadPolicy(cmodel casbinModel.Model) error {
 	casbinRules, err := adapter.casbinRuleRepository.LoadAllCasbinRules()
 	if err != nil {
 		return err
@@ -116,7 +117,7 @@ func (adapter *Adapter) LoadPolicy(cmodel cModel.Model) error {
 }
 
 // SavePolicy saves all policy rules to the storage.
-func (adapter *Adapter) SavePolicy(cmodel cModel.Model) error {
+func (adapter *Adapter) SavePolicy(cmodel casbinModel.Model) error {
 	casbinRules := make([]model.CasbinRule, 0)
 	for pType, ast := range cmodel["p"] {
 		for _, rule := range ast.Policy {
