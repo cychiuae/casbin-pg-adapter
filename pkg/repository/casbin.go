@@ -33,6 +33,30 @@ func (repository *CasbinRuleRepository) LoadAllCasbinRules() ([]model.CasbinRule
 		return nil, err
 	}
 	defer rows.Close()
+	return loadPolicyFromRows(rows)
+}
+
+// LoadFilteredRules loads casbin rules filtered
+func (repository *CasbinRuleRepository) LoadFilteredRules(filter *model.Filter) ([]model.CasbinRule, error) {
+	pFilter, gFilter := filteredWhereValues(filter)
+	rows, err := repository.db.Query(fmt.Sprintf(`
+		SELECT p_type, v0, v1, v2, v3, v4, v5 FROM "%s"."%s"
+		 WHERE 
+            ( p_type LIKE 'g%%' AND v0 LIKE $1 AND v1 LIKE $2 AND v2 LIKE $3 AND v3 LIKE $4 AND v4 LIKE $5 AND v5 LIKE $6 )
+        OR 
+            ( p_type LIKE 'p%%' AND v0 LIKE $7 AND v1 LIKE $8 AND v2 LIKE $9 AND v3 LIKE $10 AND v4 LIKE $11 AND v5 LIKE $12 )
+	`, repository.dbSchema, repository.tableName),
+		gFilter[0], gFilter[1], gFilter[2], gFilter[3], gFilter[4], gFilter[5],
+		pFilter[0], pFilter[1], pFilter[2], pFilter[3], pFilter[4], pFilter[5],
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	return loadPolicyFromRows(rows)
+}
+
+func loadPolicyFromRows(rows *sql.Rows) ([]model.CasbinRule, error) {
 	casbinRules := make([]model.CasbinRule, 0)
 	for rows.Next() {
 		var pType string
@@ -202,4 +226,19 @@ func (repository *CasbinRuleRepository) ReplaceAllCasbinRules(casbinRules []mode
 		return err
 	}
 	return nil
+}
+
+func filteredWhereValues(filter *model.Filter) ([]string, []string) {
+	p, g := []string{"%", "%", "%", "%", "%", "%"}, []string{"%", "%", "%", "%", "%", "%"}
+	for i, token := range filter.P {
+		if token != "" {
+			p[i] = token
+		}
+	}
+	for i, token := range filter.G {
+		if token != "" {
+			g[i] = token
+		}
+	}
+	return p, g
 }
